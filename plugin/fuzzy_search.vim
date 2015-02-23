@@ -1,10 +1,10 @@
+
+let g:fuzzy_search_prompt='fuzzy /'
+
+
 function! fuzzy_search#start_search()
   let obj = {}
 
-  func obj.initialize() dict
-    let self.msg = '/'
-    return self
-  endfunc
 
   func obj.search() dict
     let c = ''
@@ -39,10 +39,10 @@ function! fuzzy_search#start_search()
     let @/=matchPat
     exe "silent! norm! /" . matchPat . "\<cr>"
     redraw
-    echo self.msg . self.partial
+    echo g:fuzzy_search_prompt. self.partial
   endfunc
 
-  return obj.initialize()
+  return obj
 endfunction
 
 
