@@ -4,6 +4,19 @@ let g:fuzzysearch_incsearch=1
 let g:fuzzysearch_hlsearch=1
 let g:fuzzysearch_ignorecase=1
 
+function s:getSearchHistory()
+  redir => l:histRedir
+  silent history /
+  redir END
+  let histRedir = substitute(l:histRedir, '#  search history', '', '')
+  "let histRedir = substitute(histRedir, '1  ', '', '')
+  let histList = split(histRedir)
+  let histList[-2] = histList[-1]
+  let histList = filter(histList, 'v:key%2==1')
+  return histList
+endfunction
+
+
 function s:update(startPos, part, ignoreCase)
   if a:part == ''
     "nohlsearch
@@ -18,7 +31,7 @@ function s:update(startPos, part, ignoreCase)
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
     endif
-    let @/=matchPat
+    "let @/=matchPat
     call setpos('.', a:startPos)
     exe "silent! norm! /" . matchPat . "\<cr>"
   endif
@@ -32,11 +45,8 @@ function! fuzzysearch#start_search()
   let old_hls = &hlsearch
   let old_ic= &ignorecase
 
-  redir => histRedir
-  silent history /
-  redir END
-  let oldHist = split(histRedir)
-
+  let oldHist = s:getSearchHistory()
+  let histLen = len(oldHist)
   let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
 
   if g:fuzzysearch_incsearch==1
@@ -52,6 +62,8 @@ function! fuzzysearch#start_search()
   let startPos = getcurpos()
   let c = ''
   let partial = ''
+  let histStep = histLen
+  let didSearch = 0
   while 1
     call s:update(startPos, partial, igCase)
     let keyCode = getchar()
@@ -61,21 +73,34 @@ function! fuzzysearch#start_search()
         call setpos('.', startPos)
         exe "silent! norm! /".@/."\<cr>"
       endif
+      let didSearch = 1
       break
     elseif c == "\<esc>"
       let partial = ''
       call s:update(startPos, partial, igCase)
+      let didSearch = 0
       break
     elseif keyCode == 23 "CTRL-W
      let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
-    elseif c == ''
+    elseif keyCode is# "\<UP>"
+      if histStep>0
+        let histStep-=1
+      endif
+      let partial = oldHist[histStep]
+    elseif keyCode is# "\<DOWN>"
+      if histStep<histLen-1
+        let histStep+=1
+        let partial = oldHist[histStep]
+      else
+        let histStep=histLen
+        let partial = ''
+      endif
+    elseif keyCode is# "\<BS>"
       let partial = partial[:-2]
     else
       let partial .= c
     endif
   endwhile
-
-  let oldMatch = @/
 
   if g:fuzzysearch_incsearch==1
     let &incsearch = old_is
@@ -86,17 +111,18 @@ function! fuzzysearch#start_search()
   if g:fuzzysearch_ignorecase==1
     let &ignorecase = old_ic
   endif
-  let i=3
-  let histLen = len(oldHist)
-  while i<histLen-3
-    let h = oldHist[i+1]
-    exe "silent! norm! /".l:h."\<cr>"
-    let i+=2
-  endwhile
-  exe "silent! norm! /".oldHist[-1]."\<cr>"
+
+  let oldMatch = @/
+  for h in oldHist
+    exe "silent! norm! /".h."\<cr>"
+  endfor
   call setpos('.', startPos)
-  let @/=oldMatch
-  exe "silent! norm! /".oldMatch."\<cr>"
+  if didSearch==1
+    let @/=oldMatch
+    exe "silent! norm! /".oldMatch."\<cr>"
+  else
+    exe "silent! norm! /\<cr>"
+  endif
   redraw
 endfunction
 
