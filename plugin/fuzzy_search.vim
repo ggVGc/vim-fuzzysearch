@@ -1,49 +1,56 @@
 
 let g:fuzzy_search_prompt='fuzzy /'
 
-
-function! fuzzy_search#start_search()
-  let obj = {}
-
-
-  func obj.search() dict
-    let c = ''
-    let self.partial = ''
-    while 1
-      call self.update()
-      let keyCode = getchar()
-      let c = nr2char(keyCode)
-      if c == "\<cr>"
-        break
-      elseif c == "\<esc>"
-        let self.partial = ''
-        call self.update()
-        break
-      elseif keyCode == 23 "CTRL-W
-       let self.partial = substitute(self.partial, '[ ]*[^ ]*$', '', '')
-      elseif c == ''
-        let self.partial = self.partial[:-2]
-      else
-        let self.partial .= c
-      endif
-    endwhile
-  endfunc
-
-
-  func obj.update() dict
-    let matchPat = substitute(substitute(self.partial, '\(\w\)', '\1\\w*', 'g'), '\.\*$', '', '')
+function s:update(part)
+  if a:part == ''
+    "nohlsearch
+  else
+    let matchPat = substitute(a:part, '\(\w\)', '\1\\w*', 'g')
+    let matchPat = substitute(matchPat, '\\w\*$', '', 'g')
     let matchPat = substitute(substitute(matchPat, ' ', '.*', 'g'), '\.\*$', '', '')
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
     endif
     let @/=matchPat
     exe "silent! norm! /" . matchPat . "\<cr>"
-    redraw
-    echo g:fuzzy_search_prompt. self.partial
-  endfunc
+  endif
+  redraw
+  echo g:fuzzy_search_prompt . a:part
+endfunc
 
-  return obj
+
+function! fuzzy_search#start_search()
+  "let old_is = &incsearch
+  "let old_hls = &hlsearch
+  "set incsearch hlsearch
+
+  let c = ''
+  let partial = ''
+  while 1
+    call s:update(partial)
+    let keyCode = getchar()
+    let c = nr2char(keyCode)
+    if c == "\<cr>"
+      if partial == ''
+        exe "silent! norm! /".@/."\<cr>"
+      endif
+      break
+    elseif c == "\<esc>"
+      let partial = ''
+      call s:update(partial)
+      break
+    elseif keyCode == 23 "CTRL-W
+     let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
+    elseif c == ''
+      let partial = partial[:-2]
+    else
+      let partial .= c
+    endif
+  endwhile
+  "let &incsearch = old_is
+  "let &hlsearch = old_hls
+  "exe "silent! norm! /".@/."\<cr>"
 endfunction
 
 
-command! -range -nargs=0 FuzzySearch call fuzzy_search#start_search().search()
+command! -range -nargs=0 FuzzySearch call fuzzy_search#start_search()
