@@ -2,12 +2,17 @@
 let g:fuzzysearch_prompt='fuzzy /'
 let g:fuzzysearch_incsearch=1
 let g:fuzzysearch_hlsearch=1
+let g:fuzzysearch_ignorecase=1
 
 function s:update(startPos, part)
   if a:part == ''
     "nohlsearch
   else
-    let matchPat = substitute(a:part, '\(\w\)', '\1\\w*', 'g')
+    if g:fuzzysearch_ignorecase==1
+      let matchPat = substitute(a:part, '\(\w\)', '\\(\U\1\\|\L\1\\)\\w*', 'g')
+    else
+      let matchPat = substitute(a:part, '\(\w\)', '\1\\w*', 'g')
+    endif
     let matchPat = substitute(matchPat, '\\w\*$', '', 'g')
     let matchPat = substitute(substitute(matchPat, ' ', '.*', 'g'), '\.\*$', '', '')
     if matchPat =~ '\.\*\$$'
@@ -25,11 +30,15 @@ endfunc
 function! fuzzysearch#start_search()
   let old_is = &incsearch
   let old_hls = &hlsearch
+  let old_ic= &ignorecase
   if g:fuzzysearch_incsearch==1
     set incsearch
   endif
   if g:fuzzysearch_hlsearch==1
     set hlsearch
+  endif
+  if g:fuzzysearch_ignorecase==1
+    set ignorecase
   endif
 
   let startPos = getcurpos()
@@ -63,6 +72,9 @@ function! fuzzysearch#start_search()
   endif
   if g:fuzzysearch_hlsearch==1
     let &hlsearch = old_hls
+  endif
+  if g:fuzzysearch_ignorecase==1
+    let &ignorecase = old_ic
   endif
   call setpos('.', startPos)
   exe "silent! norm! /".@/."\<cr>"
