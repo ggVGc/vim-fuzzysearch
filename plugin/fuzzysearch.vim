@@ -4,14 +4,14 @@ let g:fuzzysearch_incsearch=1
 let g:fuzzysearch_hlsearch=1
 let g:fuzzysearch_ignorecase=1
 
-function s:update(startPos, part)
+function s:update(startPos, part, ignoreCase)
   if a:part == ''
     "nohlsearch
   else
-    if g:fuzzysearch_ignorecase==1
-      let matchPat = substitute(a:part, '\(\w\)', '\\(\U\1\\|\L\1\\)\\w*', 'g')
+    if a:ignoreCase
+      let matchPat = substitute(a:part, '\(\w\)', '[\U\1\L\1]\\w*', 'g')
     else
-      let matchPat = substitute(a:part, '\(\w\)', '\1\\w*', 'g')
+    let matchPat = substitute(a:part, '\(\w\)', '\1\\w*', 'g')
     endif
     let matchPat = substitute(matchPat, '\\w\*$', '', 'g')
     let matchPat = substitute(substitute(matchPat, ' ', '.*', 'g'), '\.\*$', '', '')
@@ -31,6 +31,9 @@ function! fuzzysearch#start_search()
   let old_is = &incsearch
   let old_hls = &hlsearch
   let old_ic= &ignorecase
+
+  let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
+
   if g:fuzzysearch_incsearch==1
     set incsearch
   endif
@@ -45,7 +48,7 @@ function! fuzzysearch#start_search()
   let c = ''
   let partial = ''
   while 1
-    call s:update(startPos, partial)
+    call s:update(startPos, partial, igCase)
     let keyCode = getchar()
     let c = nr2char(keyCode)
     if c == "\<cr>"
@@ -56,7 +59,7 @@ function! fuzzysearch#start_search()
       break
     elseif c == "\<esc>"
       let partial = ''
-      call s:update(startPos, partial)
+      call s:update(startPos, partial, igCase)
       break
     elseif keyCode == 23 "CTRL-W
      let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
