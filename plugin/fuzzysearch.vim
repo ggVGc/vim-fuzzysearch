@@ -5,7 +5,7 @@ let g:fuzzysearch_hlsearch=1
 let g:fuzzysearch_ignorecase=1
 let g:fuzzysearch_max_history = 30
 
-function s:getSearchHistory()
+function! s:getSearchHistory()
   redir => l:histRedir
   silent history /
   redir END
@@ -18,7 +18,7 @@ function s:getSearchHistory()
 endfunction
 
 
-function s:update(startPos, part, ignoreCase)
+function! s:update(startPos, part, ignoreCase)
   if a:part == ''
     "nohlsearch
   else
