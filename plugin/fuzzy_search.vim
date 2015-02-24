@@ -1,7 +1,7 @@
 
 let g:fuzzy_search_prompt='fuzzy /'
 
-function s:update(part)
+function s:update(startPos, part)
   if a:part == ''
     "nohlsearch
   else
@@ -12,6 +12,7 @@ function s:update(part)
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
     endif
     let @/=matchPat
+    call setpos('.', a:startPos)
     exe "silent! norm! /" . matchPat . "\<cr>"
   endif
   redraw
@@ -24,20 +25,22 @@ function! fuzzy_search#start_search()
   "let old_hls = &hlsearch
   "set incsearch hlsearch
 
+  let startPos = getcurpos()
   let c = ''
   let partial = ''
   while 1
-    call s:update(partial)
+    call s:update(startPos, partial)
     let keyCode = getchar()
     let c = nr2char(keyCode)
     if c == "\<cr>"
       if partial == ''
         exe "silent! norm! /".@/."\<cr>"
+        call setpos('.', startPos)
       endif
       break
     elseif c == "\<esc>"
       let partial = ''
-      call s:update(partial)
+      call s:update(startPos, partial)
       break
     elseif keyCode == 23 "CTRL-W
      let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
