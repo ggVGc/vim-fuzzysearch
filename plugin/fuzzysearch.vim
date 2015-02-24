@@ -1,5 +1,7 @@
 
-let g:fuzzy_search_prompt='fuzzy /'
+let g:fuzzysearch_prompt='fuzzy /'
+let g:fuzzysearch_incsearch=1
+let g:fuzzysearch_hlsearch=1
 
 function s:update(startPos, part)
   if a:part == ''
@@ -16,14 +18,19 @@ function s:update(startPos, part)
     exe "silent! norm! /" . matchPat . "\<cr>"
   endif
   redraw
-  echo g:fuzzy_search_prompt . a:part
+  echo g:fuzzysearch_prompt . a:part
 endfunc
 
 
-function! fuzzy_search#start_search()
-  "let old_is = &incsearch
-  "let old_hls = &hlsearch
-  "set incsearch hlsearch
+function! fuzzysearch#start_search()
+  let old_is = &incsearch
+  let old_hls = &hlsearch
+  if g:fuzzysearch_incsearch==1
+    set incsearch
+  endif
+  if g:fuzzysearch_hlsearch==1
+    set hlsearch
+  endif
 
   let startPos = getcurpos()
   let c = ''
@@ -34,8 +41,8 @@ function! fuzzy_search#start_search()
     let c = nr2char(keyCode)
     if c == "\<cr>"
       if partial == ''
-        exe "silent! norm! /".@/."\<cr>"
         call setpos('.', startPos)
+        exe "silent! norm! /".@/."\<cr>"
       endif
       break
     elseif c == "\<esc>"
@@ -50,10 +57,17 @@ function! fuzzy_search#start_search()
       let partial .= c
     endif
   endwhile
-  "let &incsearch = old_is
-  "let &hlsearch = old_hls
-  "exe "silent! norm! /".@/."\<cr>"
+
+  if g:fuzzysearch_incsearch==1
+    let &incsearch = old_is
+  endif
+  if g:fuzzysearch_hlsearch==1
+    let &hlsearch = old_hls
+  endif
+  call setpos('.', startPos)
+  exe "silent! norm! /".@/."\<cr>"
+  redraw
 endfunction
 
 
-command! -range -nargs=0 FuzzySearch call fuzzy_search#start_search()
+command! -range -nargs=0 FuzzySearch call fuzzysearch#start_search()
