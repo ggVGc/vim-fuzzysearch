@@ -60,7 +60,7 @@ function! fuzzysearch#start_search()
     set ignorecase
   endif
 
-  let startPos = getcurpos()
+  let startPos = getpos('.')
   let c = ''
   let partial = ''
   let histStep = histLen
