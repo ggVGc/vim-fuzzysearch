@@ -32,6 +32,11 @@ function! fuzzysearch#start_search()
   let old_hls = &hlsearch
   let old_ic= &ignorecase
 
+  redir => histRedir
+  silent history /
+  redir END
+  let oldHist = split(histRedir)
+
   let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
 
   if g:fuzzysearch_incsearch==1
@@ -70,6 +75,8 @@ function! fuzzysearch#start_search()
     endif
   endwhile
 
+  let oldMatch = @/
+
   if g:fuzzysearch_incsearch==1
     let &incsearch = old_is
   endif
@@ -79,8 +86,17 @@ function! fuzzysearch#start_search()
   if g:fuzzysearch_ignorecase==1
     let &ignorecase = old_ic
   endif
+  let i=3
+  let histLen = len(oldHist)
+  while i<histLen-3
+    let h = oldHist[i+1]
+    exe "silent! norm! /".l:h."\<cr>"
+    let i+=2
+  endwhile
+  exe "silent! norm! /".oldHist[-1]."\<cr>"
   call setpos('.', startPos)
-  exe "silent! norm! /".@/."\<cr>"
+  let @/=oldMatch
+  exe "silent! norm! /".oldMatch."\<cr>"
   redraw
 endfunction
 
