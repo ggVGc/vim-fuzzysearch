@@ -3,6 +3,7 @@ let g:fuzzysearch_prompt='fuzzy /'
 let g:fuzzysearch_incsearch=1
 let g:fuzzysearch_hlsearch=1
 let g:fuzzysearch_ignorecase=1
+let g:fuzzysearch_max_history = 30
 
 function s:getSearchHistory()
   redir => l:histRedir
@@ -113,9 +114,11 @@ function! fuzzysearch#start_search()
   endif
 
   let oldMatch = @/
-  for h in oldHist
-    exe "silent! norm! /".h."\<cr>"
-  endfor
+  let i=0
+  while i<g:fuzzysearch_max_history && i<histLen
+    exe "silent! norm! /".oldHist[i]."\<cr>"
+    let i+=1
+  endwhile
   call setpos('.', startPos)
   if didSearch==1
     let @/=oldMatch
