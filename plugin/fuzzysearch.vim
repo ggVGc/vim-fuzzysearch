@@ -87,11 +87,17 @@ function! fuzzysearch#start_search()
       if histStep>0
         let histStep-=1
       endif
-      let partial = oldHist[histStep]
+        let partial = substitute(substitute(oldHist[histStep], '\\w\*', '', 'g'), '\.\*', ' ', 'g')
+        if igCase
+          let partial = substitute(partial, '\[\u\(\l\)\]', '\1', 'g')
+        endif
     elseif keyCode is# "\<DOWN>"
       if histStep<histLen-1
         let histStep+=1
-        let partial = oldHist[histStep]
+        let partial = substitute(substitute(oldHist[histStep], '\\w\*', '', 'g'), '\.\*', ' ', 'g')
+        if igCase
+          let partial = substitute(partial, '\[\u\(\l\)\]', '\1', 'g')
+        endif
       else
         let histStep=histLen
         let partial = ''
@@ -114,8 +120,11 @@ function! fuzzysearch#start_search()
   endif
 
   let oldMatch = @/
-  let i=0
-  while i<g:fuzzysearch_max_history && i<histLen
+  let i=histLen-g:fuzzysearch_max_history
+  if i<0
+    let i = 0
+  endif
+  while i<histLen
     exe "silent! norm! /".oldHist[i]."\<cr>"
     let i+=1
   endwhile
@@ -123,8 +132,8 @@ function! fuzzysearch#start_search()
   if didSearch==1
     let @/=oldMatch
     exe "silent! norm! /".oldMatch."\<cr>"
-  else
-    exe "silent! norm! /\<cr>"
+  "else
+    "exe "silent! norm! /\<cr>"
   endif
   redraw
 endfunction
