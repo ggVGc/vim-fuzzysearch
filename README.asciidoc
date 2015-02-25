@@ -5,4 +5,4 @@ Adds fuzzy capabilities to normal search in vim.
 
 === `:FuzzySearch`
 Acts just like normal buffer searching, except with fuzzy matching between each letter. +
-Space translates to `.*`, i.e matches a series of any characters.
+Space matches a series of any characters(translates to `.\{-}`)
