@@ -1,4 +1,4 @@
-vim-fuzzy-search
+vim-fuzzysearch
 ----------------
 
 Adds fuzzy capabilities to normal search in vim.
