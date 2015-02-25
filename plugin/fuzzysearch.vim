@@ -53,6 +53,13 @@ function! s:update(startPos, part, ignoreCase)
   echo g:fuzzysearch_prompt . a:part
 endfunc
 
+function s:fixFuzzHistory(entry, fixCase)
+        let ret = substitute(substitute(a:entry, '\\w\\{-}', '', 'g'), '\.\\{-}', ' ', 'g')
+        if a:fixCase
+          let ret = substitute(ret, '\[\u\(\l\)\]', '\1', 'g')
+        endif
+        return ret
+endfunction
 
 function! fuzzysearch#start_search()
   let old_hls = &hlsearch
@@ -97,17 +104,11 @@ function! fuzzysearch#start_search()
       if histStep>0
         let histStep-=1
       endif
-        let partial = substitute(substitute(oldHist[histStep], '\\w\*', '', 'g'), '\.\*', ' ', 'g')
-        if igCase
-          let partial = substitute(partial, '\[\u\(\l\)\]', '\1', 'g')
-        endif
+        let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
     elseif keyCode is# "\<DOWN>"
       if histStep<histLen-1
         let histStep+=1
-        let partial = substitute(substitute(oldHist[histStep], '\\w\*', '', 'g'), '\.\*', ' ', 'g')
-        if igCase
-          let partial = substitute(partial, '\[\u\(\l\)\]', '\1', 'g')
-        endif
+        let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
       else
         let histStep=histLen
         let partial = ''
