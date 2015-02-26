@@ -23,6 +23,7 @@ function! s:restoreHistory(histList)
     let i = 0
   endif
   while i<histLen
+    set hlsearch
     let @/=a:histList[i]
     exe "silent! norm! /\<cr>"
     let i+=1
@@ -46,6 +47,7 @@ function! s:update(startPos, part, ignoreCase)
     let @/=matchPat
     exe "silent! norm! /\<cr>"
   endif
+  set hlsearch
   redraw
   echo g:fuzzysearch_prompt . a:part
 endfunc
@@ -129,14 +131,15 @@ function! fuzzysearch#start_search()
     exe "silent! norm! /\<cr>"
   endif
 
-  if g:fuzzysearch_hlsearch==1
-    let &hlsearch = old_hls
-  endif
-  if g:fuzzysearch_ignorecase==1
-    let &ignorecase = old_ic
-  endif
+  set hlsearch
   redraw
-endfunction
 
+  if g:fuzzysearch_hlsearch==1 && !old_hls
+    set nohlsearch
+  endif
+  if g:fuzzysearch_ignorecase==1 && !old_ic
+    set noignorecase
+  endif
+endfunction
 
 command! -range -nargs=0 FuzzySearch call fuzzysearch#start_search()

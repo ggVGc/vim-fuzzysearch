@@ -6,3 +6,15 @@ Adds fuzzy capabilities to normal search in vim.
 === `:FuzzySearch`
 Acts just like normal buffer searching, except with fuzzy matching between each letter. +
 Space matches a series of any characters(translates to `.\{-}`)
+
+
+=== `Useful mappings`
+Replace in file using last search: `nnoremap <leader>r :%s/<c-r>///g<left><left>` +
+I find it very useful to create a fuzzy search quickly, then replacing all instances using this mapping.
+
+=== `Options`
+`g:fuzzysearch_prompt = 'fuzzy /'`
+`g:fuzzysearch_hlsearch = 1`
+`g:fuzzysearch_ignorecase = 1`
+`g:fuzzysearch_max_history = 30`
+
