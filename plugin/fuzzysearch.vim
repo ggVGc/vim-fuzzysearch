@@ -9,7 +9,6 @@ function! s:getSearchHistory()
   silent history /
   redir END
   let histRedir = substitute(l:histRedir, '#  search history', '', '')
-  "let histRedir = substitute(histRedir, '1  ', '', '')
   let histList = split(histRedir)
   let histList[-2] = histList[-1]
   let histList = filter(histList, 'v:key%2==1')
@@ -32,9 +31,7 @@ function! s:restoreHistory(histList)
 endfunction
 
 function! s:update(startPos, part, ignoreCase)
-  if a:part == ''
-    "nohlsearch
-  else
+  if a:part != ''
     if a:ignoreCase
       let matchPat = substitute(a:part, '\(\w\)', '[\U\1\L\1]\\w\\{-}', 'g')
     else
@@ -129,7 +126,7 @@ function! fuzzysearch#start_search()
   call setpos('.', startPos)
 
   if didSearch == 1
-    exe "silent! norm! /".@/."\<cr>"
+    exe "silent! norm! /\<cr>"
   endif
 
   if g:fuzzysearch_hlsearch==1
@@ -138,6 +135,7 @@ function! fuzzysearch#start_search()
   if g:fuzzysearch_ignorecase==1
     let &ignorecase = old_ic
   endif
+  redraw
 endfunction
 
 
