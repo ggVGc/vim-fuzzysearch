@@ -66,7 +66,7 @@ function! fuzzysearch#start_search()
 
   let oldHist = s:getSearchHistory()
   let histLen = len(oldHist)
-  let igCase = g:fuzzysearch_ignorecase==1 && &ignorecase
+  let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
 
   if g:fuzzysearch_hlsearch==1
     set hlsearch
@@ -128,7 +128,7 @@ function! fuzzysearch#start_search()
   call setpos('.', startPos)
 
   if didSearch == 1
-    exe "silent! norm! /\<cr>"
+    exe "silent! norm! /".@/."\<cr>"
   endif
 
   set hlsearch
