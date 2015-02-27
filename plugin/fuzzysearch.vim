@@ -38,8 +38,10 @@ function! s:update(startPos, part, ignoreCase)
     else
       let matchPat = substitute(a:part, '\(\w\)', '\1\\w\\{-}', 'g')
     endif
+    let matchPat = substitute(matchPat, '\\w\\{-} ', '\\w\\{-}.\\{-\}', 'g')
+    let matchPat = substitute(matchPat, '\\ ', ' \\w\\{-}', 'g')
     let matchPat = substitute(matchPat, '\\w\\{-}$', '', 'g')
-    let matchPat = substitute(substitute(matchPat, ' ', '.\\{-\}', 'g'), '\.\*$', '', '')
+    "let matchPat = substitute(matchPat, '\.\*$', '', '')
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
     endif
