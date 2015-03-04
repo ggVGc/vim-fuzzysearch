@@ -10,8 +10,10 @@ function! s:getSearchHistory()
   redir END
   let histRedir = substitute(l:histRedir, '#  search history', '', '')
   let histList = split(histRedir)
-  let histList[-2] = histList[-1]
-  let histList = filter(histList, 'v:key%2==1')
+  if len(histList) > 0
+    let histList[-2] = histList[-1]
+    let histList = filter(histList, 'v:key%2==1')
+  endif
   return histList
 endfunction
 
@@ -31,16 +33,19 @@ function! s:restoreHistory(histList)
   let @/=oldSearch
 endfunction
 
+let s:fuzzyChars = '\\w\\{-}'
+
 function! s:update(startPos, part, ignoreCase)
   if a:part != ''
+    let charPat = '\(.\)'
     if a:ignoreCase
-      let matchPat = substitute(a:part, '\(\w\)', '[\U\1\L\1]\\w\\{-}', 'g')
+      let matchPat = substitute(a:part, charPat, '[\U\1\L\1]'.s:fuzzyChars, 'g')
     else
-      let matchPat = substitute(a:part, '\(\w\)', '\1\\w\\{-}', 'g')
+      let matchPat = substitute(a:part, charPat, '\1'.s:fuzzyChars, 'g')
     endif
-    let matchPat = substitute(matchPat, '\\w\\{-} ', '\\w\\{-}.\\{-\}', 'g')
-    let matchPat = substitute(matchPat, '\\ ', ' \\w\\{-}', 'g')
-    let matchPat = substitute(matchPat, '\\w\\{-}$', '', 'g')
+    let matchPat = substitute(matchPat, s:fuzzyChars.' ', s:fuzzyChars.'.\\{-\}', 'g')
+    let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
+    let matchPat = substitute(matchPat, s:fuzzyChars.'$', '', 'g')
     "let matchPat = substitute(matchPat, '\.\*$', '', '')
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
@@ -55,11 +60,11 @@ function! s:update(startPos, part, ignoreCase)
 endfunc
 
 function s:fixFuzzHistory(entry, fixCase)
-        let ret = substitute(substitute(a:entry, '\\w\\{-}', '', 'g'), '\.\\{-}', ' ', 'g')
-        if a:fixCase
-          let ret = substitute(ret, '\[\u\(\l\)\]', '\1', 'g')
-        endif
-        return ret
+  let ret = substitute(substitute(a:entry, s:fuzzyChars, '', 'g'), '\.\\{-}', ' ', 'g')
+  if a:fixCase
+    let ret = substitute(ret, '\[\u\(\l\)\]', '\1', 'g')
+  endif
+  return ret
 endfunction
 
 function! fuzzysearch#start_search()
@@ -100,13 +105,13 @@ function! fuzzysearch#start_search()
       call s:update(startPos, partial, igCase)
       break
     elseif keyCode == 23 "CTRL-W
-     let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
-    elseif keyCode is# "\<UP>"
+      let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
+    elseif keyCode is# "\<UP>" && histLen > 0
       if histStep>0
         let histStep-=1
       endif
-        let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
-    elseif keyCode is# "\<DOWN>"
+      let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
+    elseif keyCode is# "\<DOWN>" && histLen > 0
       if histStep<histLen-1
         let histStep+=1
         let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
