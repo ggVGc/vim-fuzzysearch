@@ -37,7 +37,7 @@ let s:fuzzyChars = '\\w\\{-}'
 
 function! s:update(startPos, part, ignoreCase)
   if a:part != ''
-    let charPat = '\(.\)'
+    let charPat = '\([^\\ ]\)'
     if a:ignoreCase
       let matchPat = substitute(a:part, charPat, '[\U\1\L\1]'.s:fuzzyChars, 'g')
     else
@@ -46,7 +46,6 @@ function! s:update(startPos, part, ignoreCase)
     let matchPat = substitute(matchPat, s:fuzzyChars.' ', s:fuzzyChars.'.\\{-\}', 'g')
     let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.'$', '', 'g')
-    "let matchPat = substitute(matchPat, '\.\*$', '', '')
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
     endif
@@ -59,7 +58,7 @@ function! s:update(startPos, part, ignoreCase)
   echo g:fuzzysearch_prompt . a:part
 endfunc
 
-function s:fixFuzzHistory(entry, fixCase)
+function! s:fixFuzzHistory(entry, fixCase)
   let ret = substitute(substitute(a:entry, s:fuzzyChars, '', 'g'), '\.\\{-}', ' ', 'g')
   if a:fixCase
     let ret = substitute(ret, '\[\u\(\l\)\]', '\1', 'g')
