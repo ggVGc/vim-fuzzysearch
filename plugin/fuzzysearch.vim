@@ -41,6 +41,8 @@ function! s:update(startPos, part)
     let matchPat = substitute(a:part, charPat, '\1'.s:fuzzyChars, 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.' ', s:fuzzyChars.'.\\{-\}', 'g')
     let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
+      "let matchPat = substitute(matchPat, '} \([^ ]\)', '}.\1', 'g')
+      "let matchPat = substitute(matchPat, s:fuzzyChars.' \+', s:fuzzyChars.'.\\{-\}', 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.'$', '', 'g')
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
@@ -81,6 +83,7 @@ function! fuzzysearch#start_search()
   let startPos = getpos('.')
   normal! H
   let startWindow = getpos('.')
+  call setpos('.', startPos)
   let c = ''
   let partial = ''
   let histStep = histLen
