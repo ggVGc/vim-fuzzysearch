@@ -35,14 +35,10 @@ endfunction
 
 let s:fuzzyChars = '\\w\\{-}'
 
-function! s:update(startPos, part, ignoreCase)
+function! s:update(startPos, part)
   if a:part != ''
     let charPat = '\([^\\ ]\)'
-    if a:ignoreCase
-      let matchPat = substitute(a:part, charPat, '[\U\1\L\1]'.s:fuzzyChars, 'g')
-    else
-      let matchPat = substitute(a:part, charPat, '\1'.s:fuzzyChars, 'g')
-    endif
+    let matchPat = substitute(a:part, charPat, '\1'.s:fuzzyChars, 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.' ', s:fuzzyChars.'.\\{-\}', 'g')
     let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.'$', '', 'g')
@@ -50,6 +46,9 @@ function! s:update(startPos, part, ignoreCase)
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
     endif
     call setpos('.', a:startPos)
+    if g:fuzzysearch_ignorecase==1 && !&ignorecase
+      let matchPat = matchPat.'\c'
+    endif
     let @/=matchPat
     exe "silent! norm! /\<cr>"
   endif
@@ -58,28 +57,25 @@ function! s:update(startPos, part, ignoreCase)
   echo g:fuzzysearch_prompt . a:part
 endfunc
 
-function! s:fixFuzzHistory(entry, fixCase)
+function! s:fixFuzzHistory(entry)
   let ret = substitute(substitute(a:entry, s:fuzzyChars, '', 'g'), '\.\\{-}', ' ', 'g')
-  if a:fixCase
-    let ret = substitute(ret, '\[\u\(\l\)\]', '\1', 'g')
-  endif
   return ret
 endfunction
 
 function! fuzzysearch#start_search()
   let old_hls = &hlsearch
-  let old_ic= &ignorecase
+  "let old_ic= &ignorecase
 
   let oldHist = s:getSearchHistory()
   let histLen = len(oldHist)
-  let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
+  "let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
 
   if g:fuzzysearch_hlsearch==1
     set hlsearch
   endif
-  if g:fuzzysearch_ignorecase==1
-    set ignorecase
-  endif
+  "if g:fuzzysearch_ignorecase==1
+    "set ignorecase
+  "endif
 
   let didSearch = 0
   let startPos = getpos('.')
@@ -90,7 +86,7 @@ function! fuzzysearch#start_search()
   let histStep = histLen
   let lastSearch = @/
   while 1
-    call s:update(startPos, partial, igCase)
+    call s:update(startPos, partial)
     let keyCode = getchar()
     let c = nr2char(keyCode)
     if c == "\<cr>"
@@ -101,7 +97,7 @@ function! fuzzysearch#start_search()
       break
     elseif c == "\<esc>"
       let partial = ''
-      call s:update(startPos, partial, igCase)
+      call s:update(startPos, partial)
       break
     elseif keyCode == 23 "CTRL-W
       let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
@@ -109,11 +105,11 @@ function! fuzzysearch#start_search()
       if histStep>0
         let histStep-=1
       endif
-      let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
+      let partial = s:fixFuzzHistory(oldHist[histStep])
     elseif keyCode is# "\<DOWN>" && histLen > 0
       if histStep<histLen-1
         let histStep+=1
-        let partial = s:fixFuzzHistory(oldHist[histStep], igCase)
+        let partial = s:fixFuzzHistory(oldHist[histStep])
       else
         let histStep=histLen
         let partial = ''
@@ -143,9 +139,9 @@ function! fuzzysearch#start_search()
   if g:fuzzysearch_hlsearch==1 && !old_hls
     set nohlsearch
   endif
-  if g:fuzzysearch_ignorecase==1 && !old_ic
-    set noignorecase
-  endif
+  "if g:fuzzysearch_ignorecase==1 && !old_ic
+    "set noignorecase
+  "endif
 endfunction
 
 command! -range -nargs=0 FuzzySearch call fuzzysearch#start_search()
