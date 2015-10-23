@@ -103,7 +103,11 @@ function! fuzzysearch#start_search()
       call s:update(startPos, partial)
       break
     elseif keyCode == 23 "CTRL-W
-      let partial = substitute(partial, '[ ]*[^ ]*$', '', '')
+      let oldPartial = partial
+      let partial = substitute(partial, '[^ ]*$', '', '')
+      if partial == oldPartial
+        let partial = substitute(partial, ' *$', '', '')
+      endif
     elseif keyCode is# "\<UP>" && histLen > 0
       if histStep>0
         let histStep-=1

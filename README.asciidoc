@@ -3,6 +3,8 @@ vim-fuzzysearch
 
 Adds fuzzy capabilities to normal search in vim.
 
+image:doc/example.gif[]
+
 === `:FuzzySearch`
 Acts just like normal buffer searching, except with fuzzy matching between each letter. +
 Space matches a series of any characters(translates to `.\{-}`)
