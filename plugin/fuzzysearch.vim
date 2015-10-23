@@ -106,7 +106,7 @@ function! fuzzysearch#start_search()
       let oldPartial = partial
       let partial = substitute(partial, '[^ ]*$', '', '')
       if partial == oldPartial
-        let partial = substitute(partial, ' *$', '', '')
+        let partial = substitute(partial, '[^ ]* *$', '', '')
       endif
     elseif keyCode is# "\<UP>" && histLen > 0
       if histStep>0
