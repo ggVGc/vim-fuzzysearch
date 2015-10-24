@@ -33,16 +33,30 @@ function! s:restoreHistory(histList)
   let @/=oldSearch
 endfunction
 
-let s:fuzzyChars = '\\w\\{-}'
+let s:matchSeparateWords=0
+
+if s:matchSeparateWords
+  let s:fuzzyChars = '\\w\\{-}'
+else
+  let s:fuzzyChars = '.\\{-}'
+endif
 
 function! s:update(startPos, part)
   if a:part != ''
     let charPat = '\([^\\ ]\)'
     let matchPat = substitute(a:part, charPat, '\1'.s:fuzzyChars, 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.' ', s:fuzzyChars.'.\\{-\}', 'g')
-    let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
+
+    if s:matchSeparateWords == 1
+      let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
+    endif
+
+
+" Don't actually remember what these were for..
       "let matchPat = substitute(matchPat, '} \([^ ]\)', '}.\1', 'g')
       "let matchPat = substitute(matchPat, s:fuzzyChars.' \+', s:fuzzyChars.'.\\{-\}', 'g')
+
+
     let matchPat = substitute(matchPat, s:fuzzyChars.'$', '', 'g')
     if matchPat =~ '\.\*\$$'
       let matchPat = substitute(matchPat, '\.\*\$$', '$', '')
@@ -66,18 +80,13 @@ endfunction
 
 function! fuzzysearch#start_search()
   let old_hls = &hlsearch
-  "let old_ic= &ignorecase
 
   let oldHist = s:getSearchHistory()
   let histLen = len(oldHist)
-  "let igCase = g:fuzzysearch_ignorecase==1 && !old_ic
 
   if g:fuzzysearch_hlsearch==1
     set hlsearch
   endif
-  "if g:fuzzysearch_ignorecase==1
-    "set ignorecase
-  "endif
 
   let didSearch = 0
   let startPos = getpos('.')
@@ -146,9 +155,6 @@ function! fuzzysearch#start_search()
   if g:fuzzysearch_hlsearch==1 && !old_hls
     set nohlsearch
   endif
-  "if g:fuzzysearch_ignorecase==1 && !old_ic
-    "set noignorecase
-  "endif
 endfunction
 
 command! -range -nargs=0 FuzzySearch call fuzzysearch#start_search()
