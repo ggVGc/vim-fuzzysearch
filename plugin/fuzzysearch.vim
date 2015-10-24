@@ -3,6 +3,7 @@ let g:fuzzysearch_prompt='fuzzy /'
 let g:fuzzysearch_hlsearch=1
 let g:fuzzysearch_ignorecase=1
 let g:fuzzysearch_max_history = 30
+let g:fuzzysearch_match_spaces = 0
 
 function! s:getSearchHistory()
   redir => l:histRedir
@@ -33,12 +34,11 @@ function! s:restoreHistory(histList)
   let @/=oldSearch
 endfunction
 
-let s:matchSeparateWords=0
 
-if s:matchSeparateWords
-  let s:fuzzyChars = '\\w\\{-}'
-else
+if g:fuzzysearch_match_spaces
   let s:fuzzyChars = '.\\{-}'
+else
+  let s:fuzzyChars = '\[^\\ ]\\{-}'
 endif
 
 function! s:update(startPos, part)
@@ -47,7 +47,7 @@ function! s:update(startPos, part)
     let matchPat = substitute(a:part, charPat, '\1'.s:fuzzyChars, 'g')
     let matchPat = substitute(matchPat, s:fuzzyChars.' ', s:fuzzyChars.'.\\{-\}', 'g')
 
-    if s:matchSeparateWords == 1
+    if g:fuzzysearch_match_spaces
       let matchPat = substitute(matchPat, '\\ ', ' '.s:fuzzyChars, 'g')
     endif
 
