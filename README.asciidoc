@@ -12,11 +12,11 @@ Space matches a series of any characters(translates to `.\{-}`)
 == Matching
 By default, `fuzzysearch` doesn't match over spaces. That means that `"fr"` will NOT match `"foo bar"`, but `"f r"` will.
 If you dislike this behaviour, set `g:fuzzysearch_match_spaces = 1`.
-The reasoning behind the default behaviour is that it is much easier to narrow down searches, in order to re-use patterns later, for example in a replacement by `%s//<new_string>/g`.
+The reasoning behind the default behaviour is that it is much easier to narrow down searches, in order to re-use patterns later, for example in a replacement by `:%s//<new_string>/g`.
 
 
 === Useful mappings
-Replace in file using last search: `nnoremap <leader>r :%s/<c-r>///g<left><left>` +
+Replace in file using last search: `nnoremap <leader>r :%s///g<left><left>` +
 I find it very useful to create a fuzzy search quickly, then replace all instances using this mapping.
 
 === Options
