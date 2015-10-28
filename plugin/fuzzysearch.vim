@@ -6,17 +6,12 @@ let g:fuzzysearch_max_history = 30
 let g:fuzzysearch_match_spaces = 0
 
 function! s:getSearchHistory()
-  redir => l:histRedir
-  silent history /
-  redir END
-  let histRedir = substitute(l:histRedir, '#  search history', '', '')
-  let histList = split(histRedir)
-  if len(histList) > 0
-    let histList[-2] = histList[-1]
-    let histList = filter(histList, 'v:key%2==1')
-  endif
-  return histList
+  return filter(map(range(1, 20), 'histget("/", v:val-20)'), '!empty(v:val)')
 endfunction
+
+fun! FuzzGetHist()
+  return s:getSearchHistory()
+endfun
 
 function! s:restoreHistory(histList)
   let histLen = len(a:histList)
