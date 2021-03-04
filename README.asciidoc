@@ -14,6 +14,11 @@ By default, `fuzzysearch` doesn't match over spaces. That means that `"fr"` will
 If you dislike this behaviour, set `g:fuzzysearch_match_spaces = 1`.
 The reasoning behind the default behaviour is that it is much easier to narrow down searches, in order to re-use patterns later, for example in a replacement by `:%s//<new_string>/g`.
 
+== Sensitivity
+Determine how many wildcard chars between input chars should be a match.
+0 = off, input `"fr"` will match `"f.*r"`, 2 will match `"f._._.r"`, 1 `"f._.r"` and so on.
+Ex: `g:fuzzysearch_sensitivity = 3` (default is 0)
+
 
 === Useful mappings
 Replace in file using last search: `nnoremap <leader>r :%s///g<left><left>` +
@@ -25,4 +30,5 @@ I find it very useful to create a fuzzy search quickly, then replace all instanc
 `g:fuzzysearch_ignorecase = 1` +
 `g:fuzzysearch_max_history = 30` +
 `g:fuzzysearch_match_spaces = 0`
+`g:fuzzysearch_sensitivity = 0`
 
